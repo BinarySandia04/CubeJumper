@@ -13,6 +13,7 @@ public class PlayerScript : MonoBehaviour {
     public Vector3 constantPlayerSpeed = new Vector3();
     private bool jumping = false;
     private bool walled;
+    private float distanciaAlSuelo;
 
     private void checkInput()
     {
@@ -71,9 +72,6 @@ public class PlayerScript : MonoBehaviour {
             if (distance > 0.2f)
             {
                 constantPlayerSpeed += rightSpeed;
-            } else
-            {
-                Debug.Log("DSjhdsjah");
             }
         }
         if (Input.GetKey(KeyCode.Space))
@@ -89,6 +87,7 @@ public class PlayerScript : MonoBehaviour {
     {
         // Nada?
         playerRigidbody = PlayerModel.GetComponent<Rigidbody>();
+        distanciaAlSuelo = GetComponent<Collider>().bounds.extents.y;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -108,25 +107,19 @@ public class PlayerScript : MonoBehaviour {
         float distance = 0f;
 
         // Miramos si tocamos el suelo
-        if (Physics.SphereCast(PlayerModel.transform.position, 1f, Vector3.down, out hit))
-        {
-            distance = hit.distance;
-        }
-        
-
-        if(distance < 0.2f)
+        if (Physics.Raycast(transform.position, -Vector3.up, 1.1f))
         {
             // Tocamos el suelo?
             if (jumping)
             {
                 constantPlayerSpeed.y = jumpSpeed;
-            } else
+            }
+            else
             {
                 constantPlayerSpeed.y = 0;
             }
-            
+
             playerRigidbody.useGravity = false;
-            
         } else
         {
             playerRigidbody.useGravity = true;
