@@ -1,61 +1,139 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
 public class PlayerScript : MonoBehaviour {
-
-    [Header("Key binds")]
-    public KeyCode forward;
-    public KeyCode back;
-    public KeyCode left;
-    public KeyCode right;
-    [Space(20)]
-    public float forwardSpeed;
-    public float lateralSpeed;
-    public Vector3 maxSpeed = new Vector3();
+    public GameObject PlayerModel;
+    private Rigidbody playerRigidbody;
     [Space]
-    public float deaccelerationFloat;
-    Rigidbody rb;
-    Vector3 currentForce = new Vector3();
-    void Awake()
+    public Vector3 forwardSpeed, backwardSpeed, leftSpeed, rightSpeed;
+    [Space]
+    public float jumpSpeed = 10f;
+    public float deacceleration = 0.8f;
+    private float ySpeed = 0f;
+    [HideInInspector]
+    public Vector3 constantPlayerSpeed = new Vector3();
+    private bool jumping = false;
+    private bool walled;
+
+    private void checkInput()
     {
-        rb = GetComponent<Rigidbody>();
-    }
-    void FixedUpdate ()
-    {
-        if (GetKey(forward) && currentForce.x > maxSpeed.x * -1)
-        {
-            currentForce.x -= forwardSpeed;
+        if (Input.GetKey(KeyCode.W))
+        { // - Z
+            float distance = 1000f;
+            RaycastHit hit;
+            // Cast
+            if (Physics.SphereCast(PlayerModel.transform.position, 1f, new Vector3(0, 0, -1), out hit))
+            {
+                distance = hit.distance;
+            }
+            if (distance > 0.3f)
+            {
+                constantPlayerSpeed += forwardSpeed;
+            }
+            
         }
-        if (GetKey(back) && currentForce.x < maxSpeed.x)
-        {
-            currentForce.x += forwardSpeed;
+        if (Input.GetKey(KeyCode.A))
+        { // + X
+            float distance = 1000f;
+            RaycastHit hit;
+            // Cast
+            if (Physics.SphereCast(PlayerModel.transform.position, 1f, new Vector3(1, 0, 0), out hit))
+            {
+                distance = hit.distance;
+            }
+            if (distance > 0.2f)
+            {
+                constantPlayerSpeed += leftSpeed;
+            }
         }
-        if (GetKey(left) && currentForce.z > maxSpeed.z * -1)
-        {
-            currentForce.z -= lateralSpeed;
+        if (Input.GetKey(KeyCode.S))
+        { // + Z
+            float distance = 1000f;
+            RaycastHit hit;
+            // Cast
+            if (Physics.SphereCast(PlayerModel.transform.position, 1f, new Vector3(0, 0, 1), out hit))
+            {
+                distance = hit.distance;
+            }
+            if (distance > 0.2f)
+            {
+                constantPlayerSpeed += backwardSpeed;
+            }
         }
-        if (GetKey(right) && currentForce.z < maxSpeed.z)
-        {
-            currentForce.z += lateralSpeed;
+        if (Input.GetKey(KeyCode.D))
+        { // - X
+            float distance = 1000f;
+            RaycastHit hit;
+            // Cast
+            if (Physics.SphereCast(PlayerModel.transform.position, 1f, new Vector3(-1, 0, 0), out hit))
+            {
+                distance = hit.distance;
+            }
+            if (distance > 0.2f)
+            {
+                constantPlayerSpeed += rightSpeed;
+            } else
+            {
+                Debug.Log("DSjhdsjah");
+            }
         }
-        Deaccelerate();
-        rb.velocity = currentForce;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            jumping = true;
+        } else
+        {
+            jumping = false;
+        }
     }
 
-    private void Deaccelerate()
+    void Start()
     {
-        Vector3 quiet = new Vector3(); // 0,0,0
-        float finalX = Mathf.Lerp(currentForce.x, quiet.x, deaccelerationFloat);
-        float finalZ = Mathf.Lerp(currentForce.z, quiet.z, deaccelerationFloat);
-        currentForce.x = finalX;
-        currentForce.z = finalZ;
+        // Nada?
+        playerRigidbody = PlayerModel.GetComponent<Rigidbody>();
     }
 
-    private bool GetKey(KeyCode k)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (Input.GetKey(k)) return true;
-        else return false;
+        walled = true;
+    }
+
+    // Rigidbody y esas cosas raras
+    void FixedUpdate()
+    {
+        checkInput();
+        // Aplicamos la fuerza y desaceleramos
+        constantPlayerSpeed = Vector3.Lerp(constantPlayerSpeed, Vector3.zero, deacceleration);
+        constantPlayerSpeed.y = playerRigidbody.velocity.y;
+
+        RaycastHit hit;
+        float distance = 0f;
+
+        // Miramos si tocamos el suelo
+        if (Physics.SphereCast(PlayerModel.transform.position, 1f, Vector3.down, out hit))
+        {
+            distance = hit.distance;
+        }
+        
+
+        if(distance < 0.2f)
+        {
+            // Tocamos el suelo?
+            if (jumping)
+            {
+                constantPlayerSpeed.y = jumpSpeed;
+            } else
+            {
+                constantPlayerSpeed.y = 0;
+            }
+            
+            playerRigidbody.useGravity = false;
+            
+        } else
+        {
+            playerRigidbody.useGravity = true;
+        }
+
+        playerRigidbody.velocity = constantPlayerSpeed;
+
+        // Mover el desto al otro
     }
 }
