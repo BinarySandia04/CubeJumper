@@ -18,7 +18,10 @@ public class PlayerScript : MonoBehaviour {
     private bool jumping = false;
     private bool walled;
     private float distanciaAlSuelo;
-    public float platforming = 10;
+    public float platforming = 10f;
+    public float currentTimeInAir = -1f;
+
+    public float airControl = 2f;
 
     Vector3 platformMomentum = Vector3.zero;
 
@@ -28,6 +31,7 @@ public class PlayerScript : MonoBehaviour {
     ColliderManager fCollider;
     ColliderManager rCollider;
     ColliderManager bCollider;
+    ColliderManager dCollider;
 
     private void Awake()
     {
@@ -35,6 +39,7 @@ public class PlayerScript : MonoBehaviour {
         rCollider = transform.Find("Colliders").Find("Right").GetComponent<ColliderManager>();
         fCollider = transform.Find("Colliders").Find("Front").GetComponent<ColliderManager>();
         bCollider = transform.Find("Colliders").Find("Back").GetComponent<ColliderManager>();
+        dCollider = transform.Find("Colliders").Find("Down").GetComponent<ColliderManager>();
     }
 
     bool notCollidingWalls()
@@ -84,6 +89,7 @@ public class PlayerScript : MonoBehaviour {
     void Start()
     {
         // Nada?
+        currentTimeInAir = 0f;
         StartCoroutine(makeDecals());
         playerRigidbody = PlayerModel.GetComponent<Rigidbody>();
         distanciaAlSuelo = GetComponent<Collider>().bounds.extents.y;
@@ -91,49 +97,81 @@ public class PlayerScript : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision)
     {
-        walled = true;
-        
-        if (collision.gameObject.name == "Platform")
+        if (!collision.gameObject.name.Contains("Trigger"))
         {
-            mpc = collision.transform.parent.GetComponent<MovingPlatformController>();
-        } else
-        {
-            platformMomentum = Vector3.zero;
+            if(dCollider.collided) walled = true;
+
+            if (collision.gameObject.name == "Platform")
+            {
+                mpc = collision.transform.parent.GetComponent<MovingPlatformController>();
+            }
+            else
+            {
+                platformMomentum = Vector3.zero;
+            }
         }
     }
 
     private void OnCollisionStay(Collision collision)
     {
-        walled = true;
-        
-        if (collision.gameObject.name == "Platform")
+        if (!collision.gameObject.name.Contains("Trigger"))
         {
-            mpc = collision.transform.parent.GetComponent<MovingPlatformController>();
-        } else
-        {
-            platformMomentum = Vector3.zero;
+            if (dCollider.collided) walled = true;
+
+            if (collision.gameObject.name == "Platform")
+            {
+                mpc = collision.transform.parent.GetComponent<MovingPlatformController>();
+            }
+            else
+            {
+                platformMomentum = Vector3.zero;
+            }
         }
+        
     }
 
     private void OnCollisionExit(Collision collision)
     {
-        walled = false;
-        if (collision.gameObject.name == "Platform")
+        if (!collision.gameObject.name.Contains("Trigger"))
         {
-            mpc = null;
+            walled = false;
+            if (collision.gameObject.name == "Platform")
+            {
+                mpc = null;
+            }
         }
+        
     }
 
     // Rigidbody y esas cosas raras
     void FixedUpdate()
     {
+        if (walled)
+        {
+            currentTimeInAir = 0;
+        } else
+        {
+            if (currentTimeInAir < 10f)
+            {
+                currentTimeInAir += Time.deltaTime;
+            }
+        }
+        
+
         checkInput();
         // Aplicamos la fuerza y desaceleramos
-        constantPlayerSpeed = Vector3.Lerp(constantPlayerSpeed, Vector3.zero, deacceleration);
+        if (walled)
+        {
+            constantPlayerSpeed = Vector3.Lerp(constantPlayerSpeed, Vector3.zero, deacceleration);
+        } else
+        {
+            constantPlayerSpeed = Vector3.Lerp(Vector3.Lerp(constantPlayerSpeed, Vector3.zero, currentTimeInAir / 10), Vector3.zero, deacceleration);
+        }
+        
         constantPlayerSpeed.y = 0;
         
         transform.Translate(constantPlayerSpeed / 10);
-        
+
         if (mpc != null)
         {
             if (!mpc.stopped) platformMomentum = (mpc.motion);
@@ -150,11 +188,12 @@ public class PlayerScript : MonoBehaviour {
             if (walled)
             {
                 GameObject newObject = Instantiate(decal, transform);
-                newObject.transform.SetParent(null);
-                Destroy(newObject, 120);
+                if (mpc != null) newObject.transform.SetParent(mpc.transform.Find("Platform"));
+                else newObject.transform.SetParent(null);
+                Destroy(newObject, 180);
             }
             
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }
