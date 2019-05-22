@@ -20,7 +20,7 @@ public class PlayerScript : MonoBehaviour {
     private float distanciaAlSuelo;
     public float platforming = 10f;
     public float currentTimeInAir = -1f;
-
+    public CameraZoneTriggerManager.Orientation or = CameraZoneTriggerManager.Orientation.North;
     public float airControl = 2f;
 
     Vector3 platformMomentum = Vector3.zero;
@@ -50,23 +50,84 @@ public class PlayerScript : MonoBehaviour {
 
     private void checkInput()
     {
-        if (Input.GetKey(KeyCode.W))
-        { // - Z
-            constantPlayerSpeed += forwardSpeed;  
+        if(or == CameraZoneTriggerManager.Orientation.North)
+        {
+            if (Input.GetKey(KeyCode.W))
+            { // - Z
+                constantPlayerSpeed += forwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.A))
+            { // + X
+                constantPlayerSpeed += leftSpeed;
+            }
+            if (Input.GetKey(KeyCode.S))
+            { // + Z
+                constantPlayerSpeed += backwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.D))
+            { // - X
+                constantPlayerSpeed += rightSpeed;
+
+            }
+        } else if(or == CameraZoneTriggerManager.Orientation.South)
+        {
+            if (Input.GetKey(KeyCode.W))
+            { // + Z
+                constantPlayerSpeed += backwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.A))
+            { // + X
+                constantPlayerSpeed += rightSpeed;
+            }
+            if (Input.GetKey(KeyCode.S))
+            { // + Z
+                constantPlayerSpeed += forwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.D))
+            { // - X
+                constantPlayerSpeed += leftSpeed;
+
+            }
+        } else if(or == CameraZoneTriggerManager.Orientation.East)
+        {
+            if (Input.GetKey(KeyCode.W))
+            { // - Z
+                constantPlayerSpeed += rightSpeed;
+            }
+            if (Input.GetKey(KeyCode.A))
+            { // + X
+                constantPlayerSpeed += forwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.S))
+            { // + Z
+                constantPlayerSpeed += leftSpeed;
+            }
+            if (Input.GetKey(KeyCode.D))
+            { // - X
+                constantPlayerSpeed += backwardSpeed;
+
+            }
+        } else
+        {
+            if (Input.GetKey(KeyCode.W))
+            { // - Z
+                constantPlayerSpeed += leftSpeed;
+            }
+            if (Input.GetKey(KeyCode.A))
+            { // + X
+                constantPlayerSpeed += backwardSpeed;
+            }
+            if (Input.GetKey(KeyCode.S))
+            { // + Z
+                constantPlayerSpeed += rightSpeed;
+            }
+            if (Input.GetKey(KeyCode.D))
+            { // - X
+                constantPlayerSpeed += forwardSpeed;
+
+            }
         }
-        if (Input.GetKey(KeyCode.A))
-        { // + X
-            constantPlayerSpeed += leftSpeed;
-        }
-        if (Input.GetKey(KeyCode.S))
-        { // + Z
-            constantPlayerSpeed += backwardSpeed;
-        }
-        if (Input.GetKey(KeyCode.D))
-        { // - X
-            constantPlayerSpeed += rightSpeed;
-            
-        }
+        
         if (Input.GetKey(KeyCode.Space) && walled && notCollidingWalls())
         {
             jumping = true;
@@ -77,13 +138,18 @@ public class PlayerScript : MonoBehaviour {
             jumping = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKey(KeyCode.R))
         {
-            transform.position = spawnpoint.position;
-            constantPlayerSpeed = Vector3.zero;
-            platformMomentum = Vector3.zero;
-            playerRigidbody.velocity = Vector3.zero;
+            goToSpawn();
         }
+    }
+
+    void goToSpawn()
+    {
+        transform.position = spawnpoint.position;
+        constantPlayerSpeed = Vector3.zero;
+        platformMomentum = Vector3.zero;
+        playerRigidbody.velocity = Vector3.zero;
     }
 
     void Start()
@@ -93,6 +159,17 @@ public class PlayerScript : MonoBehaviour {
         StartCoroutine(makeDecals());
         playerRigidbody = PlayerModel.GetComponent<Rigidbody>();
         distanciaAlSuelo = GetComponent<Collider>().bounds.extents.y;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Propulsor")
+        {
+            Debug.Log("SI");
+            PropulsorProperties p =  other.gameObject.GetComponent<PropulsorProperties>();
+            p.playPropulsionAnimation();
+            playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, p.propulsion, playerRigidbody.velocity.z);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -105,8 +182,8 @@ public class PlayerScript : MonoBehaviour {
             {
                 mpc = collision.transform.parent.GetComponent<MovingPlatformController>();
             }
-            else
-            {
+            else if (collision.gameObject.tag == "Muerte"){
+                goToSpawn();
                 platformMomentum = Vector3.zero;
             }
         }
@@ -124,6 +201,7 @@ public class PlayerScript : MonoBehaviour {
             }
             else
             {
+                if (collision.gameObject.tag == "Muerte") goToSpawn();
                 platformMomentum = Vector3.zero;
             }
         }

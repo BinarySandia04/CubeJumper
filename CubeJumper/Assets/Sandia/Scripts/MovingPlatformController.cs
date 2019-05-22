@@ -64,7 +64,6 @@ public class MovingPlatformController : MonoBehaviour
                 
                 for (int i = 0; i < points.Count - 1; i++)
                 {
-                    Debug.Log(i);
                     Vector3 beforePosition = desiredPosition;
                     for (float currentLerp = 0f; currentLerp < 1; currentLerp += Speed)
                     {
