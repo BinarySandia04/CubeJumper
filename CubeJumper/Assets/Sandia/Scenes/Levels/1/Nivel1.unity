@@ -1156,58 +1156,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &527306706
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 527306707}
-  - component: {fileID: 527306708}
-  m_Layer: 0
-  m_Name: Decal Projector (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &527306707
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 527306706}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -20.404713, z: 0.11}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1723416770}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &527306708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 527306706}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19d9143a39eb3b46bc4563e9889cfbd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 9ef1692866825ea45a743a77ad632b75, type: 2}
-  m_DrawDistance: 1000
-  m_FadeScale: 0.9
-  m_UVScale: {x: 1, y: 1}
-  m_UVBias: {x: 0, y: 0}
-  m_AffectsTransparency: 0
-  m_Offset: {x: 0, y: 0, z: 0}
-  m_Size: {x: 3, y: 39.34943, z: 3}
-  m_IsCropModeEnabled: 0
 --- !u!1001 &545631948
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3404,12 +3352,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1711896825}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &1723416770 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1360596902, guid: 585efe632d2052c44a4b319a7da471aa,
-    type: 3}
-  m_PrefabInstance: {fileID: 1998315270}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1751076099
 GameObject:
   m_ObjectHideFlags: 0
@@ -4104,11 +4046,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2422066054449843912, guid: 585efe632d2052c44a4b319a7da471aa,
-        type: 3}
-      propertyPath: jumpSpeed
-      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 2422066054449843912, guid: 585efe632d2052c44a4b319a7da471aa,
         type: 3}

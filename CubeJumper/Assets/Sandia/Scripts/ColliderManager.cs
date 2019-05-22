@@ -9,12 +9,12 @@ public class ColliderManager : MonoBehaviour
     // Update is called once per frame
     private void OnTriggerEnter(Collider other)
     {
-        if(!other.name.Contains("Trigger")) collided = true;
+        if(!other.name.Contains("Trigger") && !other.name.Contains("Decal")) collided = true;
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.name.Contains("Trigger")) collided = true;
+        if (!other.name.Contains("Trigger") && !other.name.Contains("Decal")) collided = true;
     }
 
     private void OnTriggerExit(Collider other)

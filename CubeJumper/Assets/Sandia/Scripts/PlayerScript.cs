@@ -22,7 +22,7 @@ public class PlayerScript : MonoBehaviour {
     public float currentTimeInAir = -1f;
     public CameraZoneTriggerManager.Orientation or = CameraZoneTriggerManager.Orientation.North;
     public float airControl = 2f;
-
+    private bool moved = false;
     Vector3 platformMomentum = Vector3.zero;
 
     private MovingPlatformController mpc = null;
@@ -127,6 +127,9 @@ public class PlayerScript : MonoBehaviour {
 
             }
         }
+
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.W)) moved = true;
+        else moved = false;
         
         if (Input.GetKey(KeyCode.Space) && walled && notCollidingWalls())
         {
@@ -150,6 +153,11 @@ public class PlayerScript : MonoBehaviour {
         constantPlayerSpeed = Vector3.zero;
         platformMomentum = Vector3.zero;
         playerRigidbody.velocity = Vector3.zero;
+
+        GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+        foreach (GameObject go in allObjects)
+            if (go.activeInHierarchy)
+                if (go.name.Contains("Deco")) Destroy(go);
     }
 
     void Start()
@@ -163,6 +171,7 @@ public class PlayerScript : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
+       
         if (other.gameObject.tag == "Propulsor")
         {
             Debug.Log("SI");
@@ -170,11 +179,21 @@ public class PlayerScript : MonoBehaviour {
             p.playPropulsionAnimation();
             playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, p.propulsion, playerRigidbody.velocity.z);
         }
+        else if (other.gameObject.tag == "Muerte")
+        {
+            goToSpawn();
+            platformMomentum = Vector3.zero;
+        }
+        else if (other.gameObject.tag == "Untaged")
+        {
+            touchingDeco = true;
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!collision.gameObject.name.Contains("Trigger"))
+        Debug.Log(collision.gameObject.name);
+        if (!collision.gameObject.name.Contains("Trigger") && !collision.gameObject.name.Contains("Decal"))
         {
             if(dCollider.collided) walled = true;
 
@@ -191,7 +210,7 @@ public class PlayerScript : MonoBehaviour {
 
     private void OnCollisionStay(Collision collision)
     {
-        if (!collision.gameObject.name.Contains("Trigger"))
+        if (!collision.gameObject.name.Contains("Trigger") && !collision.gameObject.name.Contains("Decal"))
         {
             if (dCollider.collided) walled = true;
 
@@ -263,15 +282,16 @@ public class PlayerScript : MonoBehaviour {
     {
         while (true)
         {
-            if (walled)
+            if (walled && moved)
             {
                 GameObject newObject = Instantiate(decal, transform);
+                
                 if (mpc != null) newObject.transform.SetParent(mpc.transform.Find("Platform"));
                 else newObject.transform.SetParent(null);
                 Destroy(newObject, 180);
             }
             
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForFixedUpdate();
         }
     }
 }
