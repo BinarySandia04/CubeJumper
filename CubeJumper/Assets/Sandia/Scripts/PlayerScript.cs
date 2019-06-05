@@ -6,6 +6,8 @@ public class PlayerScript : MonoBehaviour {
     public Transform spawnpoint;
     private Rigidbody playerRigidbody;
     public GameObject decal;
+    [Tooltip("Debe de ser un GameObject vacio")]
+    public GameObject decalParent;
     [Space]
     public Vector3 forwardSpeed, backwardSpeed, leftSpeed, rightSpeed;
     [Space]
@@ -33,8 +35,14 @@ public class PlayerScript : MonoBehaviour {
     ColliderManager bCollider;
     ColliderManager dCollider;
 
+    public BoxCollider decalCollider;
+
+    [SerializeField]
+    private bool touchingDeco;
+
     private void Awake()
     {
+
         lCollider = transform.Find("Colliders").Find("Left").GetComponent<ColliderManager>();
         rCollider = transform.Find("Colliders").Find("Right").GetComponent<ColliderManager>();
         fCollider = transform.Find("Colliders").Find("Front").GetComponent<ColliderManager>();
@@ -50,6 +58,18 @@ public class PlayerScript : MonoBehaviour {
 
     private void checkInput()
     {
+        /*
+         * IMPORTANTE:
+         * 
+         * Para hacer sentir el cambio de orientacion más "natural", creo
+         * que se deberia hacer de que se mantenga la orientacion antigua
+         * hasta que la tecla del movimiento se haya despresionado. Quiero decir,
+         * si estamos mirando hacia el norte y le damos a la W vamos hacia -Z, pero
+         * si entramos en un cambio de orientacion y esta pasa a ser al sud, hasta que
+         * la W no se despresione seguira yendo hacia -Z, y cuando se despresione y se 
+         * vuelva a presionar, irá hacia +Z
+         * 
+         */
         if(or == CameraZoneTriggerManager.Orientation.North)
         {
             if (Input.GetKey(KeyCode.W))
@@ -153,11 +173,10 @@ public class PlayerScript : MonoBehaviour {
         constantPlayerSpeed = Vector3.zero;
         platformMomentum = Vector3.zero;
         playerRigidbody.velocity = Vector3.zero;
-
-        GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
-        foreach (GameObject go in allObjects)
-            if (go.activeInHierarchy)
-                if (go.name.Contains("Deco")) Destroy(go);
+        
+        foreach (Transform go in decalParent.transform)
+            if (go.gameObject.activeInHierarchy)
+                if (go.gameObject.name.Contains("Deco")) Destroy(go.gameObject);
     }
 
     void Start()
@@ -181,13 +200,14 @@ public class PlayerScript : MonoBehaviour {
         }
         else if (other.gameObject.tag == "Muerte")
         {
-            goToSpawn();
-            platformMomentum = Vector3.zero;
+           
         }
-        else if (other.gameObject.tag == "Untaged")
-        {
-            touchingDeco = true;
-        }
+    }
+
+    public void muerte()
+    {
+        goToSpawn();
+        platformMomentum = Vector3.zero;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -208,9 +228,18 @@ public class PlayerScript : MonoBehaviour {
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.tag == "Muerte")
+        {
+            goToSpawn();
+            platformMomentum = Vector3.zero;
+        }
+    }
+
     private void OnCollisionStay(Collision collision)
     {
-        if (!collision.gameObject.name.Contains("Trigger") && !collision.gameObject.name.Contains("Decal"))
+        if (!collision.gameObject.name.Contains("Trigger") && !collision.gameObject.name.Contains("Deco"))
         {
             if (dCollider.collided) walled = true;
 
@@ -238,6 +267,11 @@ public class PlayerScript : MonoBehaviour {
             }
         }
         
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+
     }
 
     // Rigidbody y esas cosas raras
@@ -284,14 +318,33 @@ public class PlayerScript : MonoBehaviour {
         {
             if (walled && moved)
             {
-                GameObject newObject = Instantiate(decal, transform);
-                
-                if (mpc != null) newObject.transform.SetParent(mpc.transform.Find("Platform"));
-                else newObject.transform.SetParent(null);
-                Destroy(newObject, 180);
+                if(isNotTouchingDeco()) spawnDecal();
             }
-            
             yield return new WaitForFixedUpdate();
         }
     }
+
+    void spawnDecal()
+    {
+        GameObject newObject = Instantiate(decal, transform);
+
+        if (mpc != null) newObject.transform.SetParent(mpc.transform.Find("Platform"));
+        else newObject.transform.SetParent(decalParent.transform);
+        Destroy(newObject, 60);
+    }
+
+    bool isNotTouchingDeco()
+    {
+        foreach (Transform t in decalParent.transform)
+        {
+            BoxCollider b = t.GetComponent<BoxCollider>();
+            if (decalCollider.bounds.Intersects(b.bounds))
+            {
+                return false;
+            }
+        }
+        return true; 
+    }
+
+    
 }

@@ -12,7 +12,6 @@ public class DeathDecalScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameObject.tag = "Untaged";
         dp = GetComponent<DecalProjectorComponent>();
     }
 
@@ -38,7 +37,7 @@ public class DeathDecalScript : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         isDeathly = true;
-        gameObject.tag = "Muerte";
+        transform.parent.gameObject.tag = "Muerte";
         yield return null;
     }
 }
