@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerScript : MonoBehaviour {
     public GameObject PlayerModel;
@@ -23,6 +24,7 @@ public class PlayerScript : MonoBehaviour {
     public float platforming = 10f;
     public float currentTimeInAir = -1f;
     public CameraZoneTriggerManager.Orientation or = CameraZoneTriggerManager.Orientation.North;
+    private CameraZoneTriggerManager.Orientation orient = CameraZoneTriggerManager.Orientation.North;
     public float airControl = 2f;
     private bool moved = false;
     Vector3 platformMomentum = Vector3.zero;
@@ -70,7 +72,7 @@ public class PlayerScript : MonoBehaviour {
          * vuelva a presionar, irá hacia +Z
          * 
          */
-        if(or == CameraZoneTriggerManager.Orientation.North)
+        if(orient == CameraZoneTriggerManager.Orientation.North)
         {
             if (Input.GetKey(KeyCode.W))
             { // - Z
@@ -89,7 +91,7 @@ public class PlayerScript : MonoBehaviour {
                 constantPlayerSpeed += rightSpeed;
 
             }
-        } else if(or == CameraZoneTriggerManager.Orientation.South)
+        } else if(orient == CameraZoneTriggerManager.Orientation.South)
         {
             if (Input.GetKey(KeyCode.W))
             { // + Z
@@ -108,7 +110,7 @@ public class PlayerScript : MonoBehaviour {
                 constantPlayerSpeed += leftSpeed;
 
             }
-        } else if(or == CameraZoneTriggerManager.Orientation.East)
+        } else if(orient == CameraZoneTriggerManager.Orientation.East)
         {
             if (Input.GetKey(KeyCode.W))
             { // - Z
@@ -165,6 +167,11 @@ public class PlayerScript : MonoBehaviour {
         {
             goToSpawn();
         }
+
+        if(Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D))
+        {
+           orient = or;
+        }
     }
 
     void goToSpawn()
@@ -196,7 +203,7 @@ public class PlayerScript : MonoBehaviour {
             Debug.Log("SI");
             PropulsorProperties p =  other.gameObject.GetComponent<PropulsorProperties>();
             p.playPropulsionAnimation();
-            playerRigidbody.velocity = new Vector3(playerRigidbody.velocity.x, p.propulsion, playerRigidbody.velocity.z);
+            playerRigidbody.velocity = p.propulsion;
         }
         else if (other.gameObject.tag == "Muerte")
         {
@@ -224,6 +231,9 @@ public class PlayerScript : MonoBehaviour {
             else if (collision.gameObject.tag == "Muerte"){
                 goToSpawn();
                 platformMomentum = Vector3.zero;
+            } else if(collision.gameObject.tag == "Finish")
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
             }
         }
     }
@@ -273,10 +283,13 @@ public class PlayerScript : MonoBehaviour {
     {
 
     }
+    
 
     // Rigidbody y esas cosas raras
     void FixedUpdate()
     {
+        if (isNotTouchingDeco() && walled) spawnDecal();
+
         if (walled)
         {
             currentTimeInAir = 0;
@@ -287,9 +300,9 @@ public class PlayerScript : MonoBehaviour {
                 currentTimeInAir += Time.deltaTime;
             }
         }
-        
 
         checkInput();
+
         // Aplicamos la fuerza y desaceleramos
         if (walled)
         {

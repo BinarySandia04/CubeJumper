@@ -7,6 +7,7 @@ public class CameraPathPoint : MonoBehaviour
     public CameraZoneTriggerManager trigger;
     public Camera cam;
     public float lerptimepos, lerptimeqrt;
+    bool triggered = false;
 
     Color color1, color2;
 
@@ -38,7 +39,17 @@ public class CameraPathPoint : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (trigger.PlayerTriggered)
+        if (trigger.PlayerTriggered && !triggered)
+        {
+            StartCoroutine(doTheLerping());
+        }
+        if (Input.GetKey(KeyCode.R)) triggered = false;
+    }
+
+    IEnumerator doTheLerping()
+    {
+        triggered = true;
+        for(int i = 0; i < 500; i++)
         {
             Vector3 cameraPosition = cam.transform.position;
             Quaternion cameraQuaternion = cam.transform.rotation;
@@ -48,6 +59,9 @@ public class CameraPathPoint : MonoBehaviour
 
             cam.transform.position = desiredPosition;
             cam.transform.rotation = desiredQuartenion;
+            yield return new WaitForFixedUpdate();
         }
+        triggered = false;
+        yield return null;
     }
 }

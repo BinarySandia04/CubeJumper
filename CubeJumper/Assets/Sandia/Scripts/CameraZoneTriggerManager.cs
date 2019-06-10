@@ -27,6 +27,14 @@ public class CameraZoneTriggerManager : MonoBehaviour
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.name == "Player")
+        {
+            PlayerTriggered = true;
+        }
+    }
+
     void OnTriggerExit(Collider other)
     {
         if (other.gameObject.name == "Player")
