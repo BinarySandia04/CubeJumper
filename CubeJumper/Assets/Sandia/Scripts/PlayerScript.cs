@@ -23,6 +23,7 @@ public class PlayerScript : MonoBehaviour {
     private float distanciaAlSuelo;
     public float platforming = 10f;
     public float currentTimeInAir = -1f;
+    public float maxTimeInAir = 10f;
     public CameraZoneTriggerManager.Orientation or = CameraZoneTriggerManager.Orientation.North;
     private CameraZoneTriggerManager.Orientation orient = CameraZoneTriggerManager.Orientation.North;
     public float airControl = 2f;
@@ -295,7 +296,7 @@ public class PlayerScript : MonoBehaviour {
             currentTimeInAir = 0;
         } else
         {
-            if (currentTimeInAir < 10f)
+            if (currentTimeInAir < maxTimeInAir)
             {
                 currentTimeInAir += Time.deltaTime;
             }
@@ -309,7 +310,7 @@ public class PlayerScript : MonoBehaviour {
             constantPlayerSpeed = Vector3.Lerp(constantPlayerSpeed, Vector3.zero, deacceleration);
         } else
         {
-            constantPlayerSpeed = Vector3.Lerp(Vector3.Lerp(constantPlayerSpeed, Vector3.zero, currentTimeInAir / 10), Vector3.zero, deacceleration);
+            constantPlayerSpeed = Vector3.Lerp(Vector3.Lerp(constantPlayerSpeed, Vector3.zero, currentTimeInAir / maxTimeInAir), Vector3.zero, deacceleration);
         }
         
         constantPlayerSpeed.y = 0;
@@ -341,8 +342,7 @@ public class PlayerScript : MonoBehaviour {
     {
         GameObject newObject = Instantiate(decal, transform);
 
-        if (mpc != null) newObject.transform.SetParent(mpc.transform.Find("Platform"));
-        else newObject.transform.SetParent(decalParent.transform);
+        newObject.transform.SetParent(decalParent.transform);
         Destroy(newObject, 60);
     }
 

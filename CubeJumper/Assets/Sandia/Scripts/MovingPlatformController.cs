@@ -8,6 +8,7 @@ public class MovingPlatformController : MonoBehaviour
     public bool ReturnBackwards = true;
     public float Speed = 0.1f;
     public float Wait = 1f;
+    public float initialDelay = 0f;
     public bool stopped = false;
     public Vector3 motion;
 
@@ -31,6 +32,7 @@ public class MovingPlatformController : MonoBehaviour
 
     IEnumerator platformCoroutine()
     {
+        yield return new WaitForSecondsRealtime(initialDelay);
         while (true)
         {
             Vector3 desiredPosition = transform.position;
